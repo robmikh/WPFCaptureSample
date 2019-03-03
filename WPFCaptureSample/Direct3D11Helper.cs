@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Windows.Graphics.DirectX.Direct3D11;
 
-namespace WPFCompTest
+namespace WPFCaptureSample
 {
     static class Direct3D11Helper
     {

@@ -20,7 +20,7 @@ using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Core;
 
-namespace WPFCompTest
+namespace WPFCaptureSample
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

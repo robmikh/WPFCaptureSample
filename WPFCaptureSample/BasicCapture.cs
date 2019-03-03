@@ -9,7 +9,7 @@ using Windows.Graphics.DirectX;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
 
-namespace WPFCompTest
+namespace WPFCaptureSample
 {
     class BasicCapture : IDisposable
     {

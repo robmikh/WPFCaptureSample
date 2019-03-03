@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WPFCompTest.Properties
+namespace WPFCaptureSample.Properties
 {
 
 

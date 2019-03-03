@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Windows.System;
 
-namespace WPFCompTest
+namespace WPFCaptureSample
 {
     static class CoreMessagingHelper
     {

@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Windows.UI.Composition;
 
-namespace WPFCompTest
+namespace WPFCaptureSample
 {
     static class CompositionHelper
     {

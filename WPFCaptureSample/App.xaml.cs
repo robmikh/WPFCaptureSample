@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Windows.System;
 
-namespace WPFCompTest
+namespace WPFCaptureSample
 {
     /// <summary>
     /// Interaction logic for App.xaml

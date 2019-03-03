@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Graphics.Capture;
 
-namespace WPFCompTest
+namespace WPFCaptureSample
 {
     static class CaptureHelper
     {
