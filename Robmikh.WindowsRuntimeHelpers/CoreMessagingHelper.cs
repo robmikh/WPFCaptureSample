@@ -2,9 +2,9 @@
 using System.Runtime.InteropServices;
 using Windows.System;
 
-namespace WPFCaptureSample
+namespace Robmikh.WindowsRuntimeHelpers
 {
-    static class CoreMessagingHelper
+    public static class CoreMessagingHelper
     {
         enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE
         {

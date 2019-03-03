@@ -5,6 +5,10 @@ VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFCaptureSample", "WPFCaptureSample\WPFCaptureSample.csproj", "{4DDD37B1-E3E8-46C1-BDE9-3039A93DAF27}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptureSampleCore", "CaptureSampleCore\CaptureSampleCore.csproj", "{502B19A1-292A-4E7F-9C19-B16CA42F1F82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Robmikh.WindowsRuntimeHelpers", "Robmikh.WindowsRuntimeHelpers\Robmikh.WindowsRuntimeHelpers.csproj", "{EC969287-3D35-410A-806C-0BAAA7564911}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{4DDD37B1-E3E8-46C1-BDE9-3039A93DAF27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DDD37B1-E3E8-46C1-BDE9-3039A93DAF27}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DDD37B1-E3E8-46C1-BDE9-3039A93DAF27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{502B19A1-292A-4E7F-9C19-B16CA42F1F82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{502B19A1-292A-4E7F-9C19-B16CA42F1F82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{502B19A1-292A-4E7F-9C19-B16CA42F1F82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{502B19A1-292A-4E7F-9C19-B16CA42F1F82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC969287-3D35-410A-806C-0BAAA7564911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC969287-3D35-410A-806C-0BAAA7564911}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC969287-3D35-410A-806C-0BAAA7564911}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC969287-3D35-410A-806C-0BAAA7564911}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

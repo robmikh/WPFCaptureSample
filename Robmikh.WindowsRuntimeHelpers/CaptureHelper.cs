@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Graphics.Capture;
 
-namespace WPFCaptureSample
+namespace Robmikh.WindowsRuntimeHelpers
 {
-    static class CaptureHelper
+    public static class CaptureHelper
     {
         static readonly Guid GraphicsCaptureItemGuid = new Guid("79C3F95B-31F7-4EC2-A464-632EF5D30760");
 

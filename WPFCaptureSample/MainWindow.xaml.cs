@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CaptureSampleCore;
+using Robmikh.WindowsRuntimeHelpers;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -32,8 +34,6 @@ namespace WPFCaptureSample
         {
             InitializeComponent();
 
-            _device = Direct3D11Helper.CreateDevice();
-
             // force grpahicscapture.dll to load
             var picker = new GraphicsCapturePicker();
         }
@@ -65,23 +65,9 @@ namespace WPFCaptureSample
             _root.RelativeSizeAdjustment = Vector2.One;
             _target.Root = _root;
 
-            // Setup our content
-            _brush = _compositor.CreateSurfaceBrush();
-            _brush.HorizontalAlignmentRatio = 0.5f;
-            _brush.VerticalAlignmentRatio = 0.5f;
-            _brush.Stretch = CompositionStretch.Uniform;
-
-            var shadow = _compositor.CreateDropShadow();
-            shadow.Mask = _brush;
-
-            _content = _compositor.CreateSpriteVisual();
-            _content.AnchorPoint = new Vector2(0.5f);
-            _content.RelativeOffsetAdjustment = new Vector3(0.5f, 0.5f, 0);
-            _content.RelativeSizeAdjustment = Vector2.One;
-            _content.Size = new Vector2(-80, -80);
-            _content.Brush = _brush;
-            _content.Shadow = shadow;
-            _root.Children.InsertAtTop(_content);
+            // Setup the rest of our sample application
+            _sample = new BasicSampleApplication(_compositor);
+            _root.Children.InsertAtTop(_sample.Visual);
         }
 
         private void StartCapture()
@@ -95,19 +81,13 @@ namespace WPFCaptureSample
             var item = CaptureHelper.CreateItemForWindow(visualStudioHwnd);
             if (item != null)
             {
-                _capture = new BasicCapture(_device, item);
-
-                var surface = _capture.CreateSurface(_compositor);
-                _brush.Surface = surface;
-
-                _capture.StartCapture();
+                _sample.StartCaptureFromItem(item);
             }
         }
 
         private void StopCapture()
         {
-            _capture?.Dispose();
-            _brush.Surface = null;
+            _sample.StopCapture();
         }
 
         private IntPtr _hwnd;
@@ -115,10 +95,6 @@ namespace WPFCaptureSample
         private CompositionTarget _target;
         private ContainerVisual _root;
 
-        private SpriteVisual _content;
-        private CompositionSurfaceBrush _brush;
-
-        private IDirect3DDevice _device;
-        private BasicCapture _capture;
+        private BasicSampleApplication _sample;
     }
 }

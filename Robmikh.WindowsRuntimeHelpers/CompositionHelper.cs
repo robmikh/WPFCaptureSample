@@ -2,9 +2,9 @@
 using System.Runtime.InteropServices;
 using Windows.UI.Composition;
 
-namespace WPFCaptureSample
+namespace Robmikh.WindowsRuntimeHelpers
 {
-    static class CompositionHelper
+    public static class CompositionHelper
     {
         [ComImport]
         [Guid("25297D5C-3AD4-4C9C-B5CF-E36A38512330")]
