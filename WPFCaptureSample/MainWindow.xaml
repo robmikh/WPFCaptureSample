@@ -9,7 +9,7 @@
         Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150" />
+            <ColumnDefinition Width="200" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -24,6 +24,14 @@
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding MainWindowTitle}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button x:Name="PrimaryMonitorButton" Content="Use Primary Monitor" Click="PrimaryMonitorButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="10" />
+                <ComboBox x:Name="MonitorComboBox" Margin="10" SelectionChanged="MonitorComboBox_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DeviceName}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

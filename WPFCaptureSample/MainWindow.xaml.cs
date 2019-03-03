@@ -34,7 +34,17 @@ namespace WPFCaptureSample
         private async void PickerButton_Click(object sender, RoutedEventArgs e)
         {
             StopCapture();
+            WindowComboBox.SelectedIndex = -1;
+            MonitorComboBox.SelectedIndex = -1;
             await StartPickerCaptureAsync();
+        }
+
+        private void PrimaryMonitorButton_Click(object sender, RoutedEventArgs e)
+        {
+            StopCapture();
+            WindowComboBox.SelectedIndex = -1;
+            MonitorComboBox.SelectedIndex = -1;
+            StartPrimaryMonitorCapture();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -54,11 +64,14 @@ namespace WPFCaptureSample
 
             InitComposition(controlsWidth);
             InitWindowList();
+            InitMonitorList();
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             StopCapture();
+            WindowComboBox.SelectedIndex = -1;
+            MonitorComboBox.SelectedIndex = -1;
         }
 
         private void WindowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -68,6 +81,8 @@ namespace WPFCaptureSample
 
             if (process != null)
             {
+                StopCapture();
+                MonitorComboBox.SelectedIndex = -1;
                 var hwnd = process.MainWindowHandle;
                 try
                 {
@@ -77,6 +92,29 @@ namespace WPFCaptureSample
                 {
                     Debug.WriteLine($"Hwnd 0x{hwnd.ToInt32():X8} is not valid for capture!");
                     _processes.Remove(process);
+                    comboBox.SelectedIndex = -1;
+                }
+            }
+        }
+
+        private void MonitorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var comboBox = (ComboBox)sender;
+            var monitor = (MonitorInfo)comboBox.SelectedItem;
+
+            if (monitor != null)
+            {
+                StopCapture();
+                WindowComboBox.SelectedIndex = -1;
+                var hmon = monitor.Hmon;
+                try
+                {
+                    StartHmonCapture(hmon);
+                }
+                catch (Exception)
+                {
+                    Debug.WriteLine($"Hmon 0x{hmon.ToInt32():X8} is not valid for capture!");
+                    _monitors.Remove(monitor);
                     comboBox.SelectedIndex = -1;
                 }
             }
@@ -118,6 +156,21 @@ namespace WPFCaptureSample
             }
         }
 
+        private void InitMonitorList()
+        {
+            if (ApiInformation.IsApiContractPresent(typeof(Windows.Foundation.UniversalApiContract).FullName, 8))
+            {
+                var monitors = MonitorEnumerationHelper.GetMonitors();
+                _monitors = new ObservableCollection<MonitorInfo>(monitors);
+                MonitorComboBox.ItemsSource = _monitors;
+            }
+            else
+            {
+                MonitorComboBox.IsEnabled = false;
+                PrimaryMonitorButton.IsEnabled = false;
+            }
+        }
+
         private async Task StartPickerCaptureAsync()
         {
             var picker = new GraphicsCapturePicker();
@@ -139,6 +192,23 @@ namespace WPFCaptureSample
             }
         }
 
+        private void StartHmonCapture(IntPtr hmon)
+        {
+            var item = CaptureHelper.CreateItemForMonitor(hmon);
+            if (item != null)
+            {
+                _sample.StartCaptureFromItem(item);
+            }
+        }
+
+        private void StartPrimaryMonitorCapture()
+        {
+            var monitor = (from m in MonitorEnumerationHelper.GetMonitors()
+                           where m.IsPrimary
+                           select m).First();
+            StartHmonCapture(monitor.Hmon);
+        }
+
         private void StopCapture()
         {
             _sample.StopCapture();
@@ -151,5 +221,6 @@ namespace WPFCaptureSample
 
         private BasicSampleApplication _sample;
         private ObservableCollection<Process> _processes;
+        private ObservableCollection<MonitorInfo> _monitors;
     }
 }

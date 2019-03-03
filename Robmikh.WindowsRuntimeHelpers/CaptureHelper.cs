@@ -58,5 +58,20 @@ namespace Robmikh.WindowsRuntimeHelpers
 
             return item;
         }
+
+        public static GraphicsCaptureItem CreateItemForMonitor(IntPtr hmon)
+        {
+            var factory = WindowsRuntimeMarshal.GetActivationFactory(typeof(GraphicsCaptureItem));
+            var interop = (IGraphicsCaptureItemInterop)factory;
+
+            var temp = typeof(GraphicsCaptureItem);
+
+            // For some reason typeof(GraphicsCaptureItem).GUID returns the wrong guid?
+            var itemPointer = interop.CreateForMonitor(hmon, GraphicsCaptureItemGuid);
+            var item = Marshal.GetObjectForIUnknown(itemPointer) as GraphicsCaptureItem;
+            Marshal.Release(itemPointer);
+
+            return item;
+        }
     }
 }
