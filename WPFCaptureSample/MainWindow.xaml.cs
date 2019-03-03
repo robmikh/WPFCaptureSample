@@ -34,12 +34,16 @@ namespace WPFCaptureSample
         private async void PickerButton_Click(object sender, RoutedEventArgs e)
         {
             StopCapture();
+            WindowComboBox.SelectedIndex = -1;
+            MonitorComboBox.SelectedIndex = -1;
             await StartPickerCaptureAsync();
         }
 
         private void PrimaryMonitorButton_Click(object sender, RoutedEventArgs e)
         {
             StopCapture();
+            WindowComboBox.SelectedIndex = -1;
+            MonitorComboBox.SelectedIndex = -1;
             StartPrimaryMonitorCapture();
         }
 
@@ -66,6 +70,8 @@ namespace WPFCaptureSample
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             StopCapture();
+            WindowComboBox.SelectedIndex = -1;
+            MonitorComboBox.SelectedIndex = -1;
         }
 
         private void WindowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -75,6 +81,8 @@ namespace WPFCaptureSample
 
             if (process != null)
             {
+                StopCapture();
+                MonitorComboBox.SelectedIndex = -1;
                 var hwnd = process.MainWindowHandle;
                 try
                 {
@@ -92,10 +100,12 @@ namespace WPFCaptureSample
         private void MonitorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var comboBox = (ComboBox)sender;
-            var monitor = (DisplayInfo)comboBox.SelectedItem;
+            var monitor = (MonitorInfo)comboBox.SelectedItem;
 
             if (monitor != null)
             {
+                StopCapture();
+                WindowComboBox.SelectedIndex = -1;
                 var hmon = monitor.Hmon;
                 try
                 {
@@ -148,10 +158,10 @@ namespace WPFCaptureSample
 
         private void InitMonitorList()
         {
-            if (!ApiInformation.IsApiContractPresent(typeof(Windows.Foundation.UniversalApiContract).FullName, 8))
+            if (ApiInformation.IsApiContractPresent(typeof(Windows.Foundation.UniversalApiContract).FullName, 8))
             {
-                var monitors = MonitorEnumerationHelper.GetDisplays();
-                _monitors = new ObservableCollection<DisplayInfo>(monitors);
+                var monitors = MonitorEnumerationHelper.GetMonitors();
+                _monitors = new ObservableCollection<MonitorInfo>(monitors);
                 MonitorComboBox.ItemsSource = _monitors;
             }
             else
@@ -193,7 +203,7 @@ namespace WPFCaptureSample
 
         private void StartPrimaryMonitorCapture()
         {
-            var monitor = (from m in MonitorEnumerationHelper.GetDisplays()
+            var monitor = (from m in MonitorEnumerationHelper.GetMonitors()
                            where m.IsPrimary
                            select m).First();
             StartHmonCapture(monitor.Hmon);
@@ -211,6 +221,6 @@ namespace WPFCaptureSample
 
         private BasicSampleApplication _sample;
         private ObservableCollection<Process> _processes;
-        private ObservableCollection<DisplayInfo> _monitors;
+        private ObservableCollection<MonitorInfo> _monitors;
     }
 }

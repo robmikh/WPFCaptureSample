@@ -9,7 +9,7 @@ using Windows.Foundation;
 
 namespace WPFCaptureSample
 {
-    class DisplayInfo
+    class MonitorInfo
     {
         public bool IsPrimary { get; set; }
         public Vector2 ScreenSize { get; set; }
@@ -32,10 +32,6 @@ namespace WPFCaptureSample
             public int bottom;
         }
 
-        public class DisplayInfoCollection : List<DisplayInfo>
-        {
-        }
-
         private const int CCHDEVICENAME = 32;
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         internal struct MonitorInfoEx
@@ -54,9 +50,9 @@ namespace WPFCaptureSample
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfoEx lpmi);
 
-        public static DisplayInfoCollection GetDisplays()
+        public static IEnumerable<MonitorInfo> GetMonitors()
         {
-            DisplayInfoCollection col = new DisplayInfoCollection();
+            var result = new List<MonitorInfo>();
 
             EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
                 delegate (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
@@ -66,18 +62,20 @@ namespace WPFCaptureSample
                     bool success = GetMonitorInfo(hMonitor, ref mi);
                     if (success)
                     {
-                        DisplayInfo di = new DisplayInfo();
-                        di.ScreenSize = new Vector2(mi.Monitor.right - mi.Monitor.left, mi.Monitor.bottom - mi.Monitor.top);
-                        di.MonitorArea = new Rect(mi.Monitor.left, mi.Monitor.top, di.ScreenSize.X, di.ScreenSize.Y);
-                        di.WorkArea = new Rect(mi.WorkArea.left, mi.WorkArea.top, mi.WorkArea.right - mi.WorkArea.left, mi.WorkArea.bottom - mi.WorkArea.top);
-                        di.IsPrimary = mi.Flags > 0;
-                        di.Hmon = hMonitor;
-                        di.DeviceName = mi.DeviceName;
-                        col.Add(di);
+                        var info = new MonitorInfo
+                        {
+                            ScreenSize = new Vector2(mi.Monitor.right - mi.Monitor.left, mi.Monitor.bottom - mi.Monitor.top),
+                            MonitorArea = new Rect(mi.Monitor.left, mi.Monitor.top, mi.Monitor.right - mi.Monitor.left, mi.Monitor.bottom - mi.Monitor.top),
+                            WorkArea = new Rect(mi.WorkArea.left, mi.WorkArea.top, mi.WorkArea.right - mi.WorkArea.left, mi.WorkArea.bottom - mi.WorkArea.top),
+                            IsPrimary = mi.Flags > 0,
+                            Hmon = hMonitor,
+                            DeviceName = mi.DeviceName
+                        };
+                        result.Add(info);
                     }
                     return true;
                 }, IntPtr.Zero);
-            return col;
+            return result;
         }
     }
 }
