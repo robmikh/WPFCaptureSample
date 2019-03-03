@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -32,21 +33,23 @@ namespace WPFCaptureSample
             InitializeComponent();
 
             _device = Direct3D11Helper.CreateDevice();
+
+            // force grpahicscapture.dll to load
+            var picker = new GraphicsCapturePicker();
         }
 
-        private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
             StopCapture();
-            var ignored = StartCaptureAsync();
+            StartCapture();
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var interopWindow = new WindowInteropHelper(this);
             _hwnd = interopWindow.Handle;
 
             InitComposition();
-            await StartCaptureAsync();
         }
 
         private void InitComposition()
@@ -58,9 +61,8 @@ namespace WPFCaptureSample
             _target = _compositor.CreateDesktopWindowTarget(_hwnd, true);
 
             // Attach our root visual
-            _root = _compositor.CreateSpriteVisual();
+            _root = _compositor.CreateContainerVisual();
             _root.RelativeSizeAdjustment = Vector2.One;
-            _root.Brush = _compositor.CreateColorBrush(Colors.White);
             _target.Root = _root;
 
             // Setup our content
@@ -82,12 +84,15 @@ namespace WPFCaptureSample
             _root.Children.InsertAtTop(_content);
         }
 
-        private async Task StartCaptureAsync()
+        private void StartCapture()
         {
-            var picker = new GraphicsCapturePicker();
-            picker.SetWindow(_hwnd);
+            var processes = Process.GetProcesses();
+            var matchingProcesses = from p in processes
+                                    where p.MainWindowTitle.Contains("Visual Studio")
+                                    select p;
+            var visualStudioHwnd = matchingProcesses.First().MainWindowHandle;
 
-            var item = await picker.PickSingleItemAsync();
+            var item = CaptureHelper.CreateItemForWindow(visualStudioHwnd);
             if (item != null)
             {
                 _capture = new BasicCapture(_device, item);
@@ -108,7 +113,7 @@ namespace WPFCaptureSample
         private IntPtr _hwnd;
         private Compositor _compositor;
         private CompositionTarget _target;
-        private SpriteVisual _root;
+        private ContainerVisual _root;
 
         private SpriteVisual _content;
         private CompositionSurfaceBrush _brush;

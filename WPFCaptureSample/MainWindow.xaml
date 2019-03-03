@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:WPFCaptureSample"
         mc:Ignorable="d"
         Title="WPF Capture Sample" Height="450" Width="800"
-        Loaded="Window_Loaded" MouseDoubleClick="Window_MouseDoubleClick">
+        Loaded="Window_Loaded" >
     <Grid>
-        
+        <Button Content="Capture" Click="Button_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" />
     </Grid>
 </Window>
