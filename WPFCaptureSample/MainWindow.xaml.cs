@@ -1,27 +1,17 @@
 ﻿using CaptureSampleCore;
 using Robmikh.WindowsRuntimeHelpers;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Windows.Graphics.Capture;
-using Windows.Graphics.DirectX.Direct3D11;
-using Windows.System;
-using Windows.UI;
 using Windows.UI.Composition;
-using Windows.UI.Composition.Core;
 
 namespace WPFCaptureSample
 {
@@ -34,14 +24,16 @@ namespace WPFCaptureSample
         {
             InitializeComponent();
 
+#if DEBUG
             // force grpahicscapture.dll to load
             var picker = new GraphicsCapturePicker();
+#endif
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void PickerButton_Click(object sender, RoutedEventArgs e)
         {
             StopCapture();
-            StartCapture();
+            await StartPickerCaptureAsync();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -49,10 +41,50 @@ namespace WPFCaptureSample
             var interopWindow = new WindowInteropHelper(this);
             _hwnd = interopWindow.Handle;
 
-            InitComposition();
+            var presentationSource = PresentationSource.FromVisual(this);
+            var dpiX = 1.0;
+            var dpiY = 1.0;
+            if (presentationSource != null)
+            {
+                dpiX = presentationSource.CompositionTarget.TransformToDevice.M11;
+                dpiY = presentationSource.CompositionTarget.TransformToDevice.M22;
+            }
+            var controlsWidth = (float)(ControlsGrid.ActualWidth * dpiX);
+
+            InitComposition(controlsWidth);
+            InitWindowList();
         }
 
-        private void InitComposition()
+        private void SampleArea_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.RightButton == MouseButtonState.Released)
+            {
+                StopCapture();
+            }
+        }
+
+        private void WindowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var comboBox = (ComboBox)sender;
+            var process = (Process)comboBox.SelectedItem;
+
+            if (process != null)
+            {
+                var hwnd = process.MainWindowHandle;
+                try
+                {
+                    StartHwndCapture(hwnd);
+                }
+                catch (Exception)
+                {
+                    Debug.WriteLine($"Hwnd 0x{hwnd.ToInt32():X8} is not valid for capture!");
+                    _processes.Remove(process);
+                    comboBox.SelectedIndex = -1;
+                }
+            }
+        }
+
+        private void InitComposition(float controlsWidth)
         {
             // Create our compositor
             _compositor = new Compositor();
@@ -63,6 +95,8 @@ namespace WPFCaptureSample
             // Attach our root visual
             _root = _compositor.CreateContainerVisual();
             _root.RelativeSizeAdjustment = Vector2.One;
+            _root.Size = new Vector2(-controlsWidth, 0);
+            _root.Offset = new Vector3(controlsWidth, 0, 0);
             _target.Root = _root;
 
             // Setup the rest of our sample application
@@ -70,15 +104,30 @@ namespace WPFCaptureSample
             _root.Children.InsertAtTop(_sample.Visual);
         }
 
-        private void StartCapture()
+        private void InitWindowList()
         {
-            var processes = Process.GetProcesses();
-            var matchingProcesses = from p in processes
-                                    where p.MainWindowTitle.Contains("Visual Studio")
-                                    select p;
-            var visualStudioHwnd = matchingProcesses.First().MainWindowHandle;
+            var processesWithWindows = from p in Process.GetProcesses()
+                                       where !string.IsNullOrWhiteSpace(p.MainWindowTitle) && WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)
+                                       select p;
+            _processes = new ObservableCollection<Process>(processesWithWindows);
+            WindowComboBox.ItemsSource = _processes;
+        }
 
-            var item = CaptureHelper.CreateItemForWindow(visualStudioHwnd);
+        private async Task StartPickerCaptureAsync()
+        {
+            var picker = new GraphicsCapturePicker();
+            picker.SetWindow(_hwnd);
+            var item = await picker.PickSingleItemAsync();
+
+            if (item != null)
+            {
+                _sample.StartCaptureFromItem(item);
+            }
+        }
+
+        private void StartHwndCapture(IntPtr hwnd)
+        {
+            var item = CaptureHelper.CreateItemForWindow(hwnd);
             if (item != null)
             {
                 _sample.StartCaptureFromItem(item);
@@ -96,5 +145,6 @@ namespace WPFCaptureSample
         private ContainerVisual _root;
 
         private BasicSampleApplication _sample;
+        private ObservableCollection<Process> _processes;
     }
 }

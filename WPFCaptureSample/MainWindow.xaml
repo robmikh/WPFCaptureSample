@@ -6,8 +6,29 @@
         xmlns:local="clr-namespace:WPFCaptureSample"
         mc:Ignorable="d"
         Title="WPF Capture Sample" Height="450" Width="800"
-        Loaded="Window_Loaded" >
+        Loaded="Window_Loaded">
     <Grid>
-        <Button Content="Capture" Click="Button_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Grid x:Name="ControlsGrid" Grid.Column="0">
+            <StackPanel Margin="10">
+                <Button x:Name="PickerButton" Content="Use Picker" Click="PickerButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="10" />
+                <ComboBox x:Name="WindowComboBox" Margin="10" SelectionChanged="WindowComboBox_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding MainWindowTitle}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <Rectangle Fill="WhiteSmoke" MouseUp="SampleArea_MouseUp" />
+        </Grid>
+        
     </Grid>
 </Window>
