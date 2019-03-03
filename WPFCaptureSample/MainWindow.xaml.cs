@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using Windows.Foundation.Metadata;
 using Windows.Graphics.Capture;
 using Windows.UI.Composition;
 
@@ -55,12 +56,9 @@ namespace WPFCaptureSample
             InitWindowList();
         }
 
-        private void SampleArea_MouseUp(object sender, MouseButtonEventArgs e)
+        private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-            if (e.RightButton == MouseButtonState.Released)
-            {
-                StopCapture();
-            }
+            StopCapture();
         }
 
         private void WindowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -106,11 +104,18 @@ namespace WPFCaptureSample
 
         private void InitWindowList()
         {
-            var processesWithWindows = from p in Process.GetProcesses()
-                                       where !string.IsNullOrWhiteSpace(p.MainWindowTitle) && WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)
-                                       select p;
-            _processes = new ObservableCollection<Process>(processesWithWindows);
-            WindowComboBox.ItemsSource = _processes;
+            if (ApiInformation.IsApiContractPresent(typeof(Windows.Foundation.UniversalApiContract).FullName, 8))
+            {
+                var processesWithWindows = from p in Process.GetProcesses()
+                                           where !string.IsNullOrWhiteSpace(p.MainWindowTitle) && WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)
+                                           select p;
+                _processes = new ObservableCollection<Process>(processesWithWindows);
+                WindowComboBox.ItemsSource = _processes;
+            }
+            else
+            {
+                WindowComboBox.IsEnabled = false;
+            }
         }
 
         private async Task StartPickerCaptureAsync()
