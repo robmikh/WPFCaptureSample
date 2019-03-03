@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Robmikh.WindowsRuntimeHelpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,9 +10,9 @@ using Windows.Graphics.DirectX;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
 
-namespace WPFCaptureSample
+namespace CaptureSampleCore
 {
-    class BasicCapture : IDisposable
+    public class BasicCapture : IDisposable
     {
         public BasicCapture(IDirect3DDevice device, GraphicsCaptureItem item)
         {

@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CaptureSampleCore;
+using Robmikh.WindowsRuntimeHelpers;
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Windows.Foundation.Metadata;
 using Windows.Graphics.Capture;
-using Windows.Graphics.DirectX.Direct3D11;
-using Windows.System;
-using Windows.UI;
 using Windows.UI.Composition;
-using Windows.UI.Composition.Core;
 
 namespace WPFCaptureSample
 {
@@ -31,25 +25,64 @@ namespace WPFCaptureSample
         {
             InitializeComponent();
 
-            _device = Direct3D11Helper.CreateDevice();
+#if DEBUG
+            // force grpahicscapture.dll to load
+            var picker = new GraphicsCapturePicker();
+#endif
         }
 
-        private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private async void PickerButton_Click(object sender, RoutedEventArgs e)
         {
             StopCapture();
-            var ignored = StartCaptureAsync();
+            await StartPickerCaptureAsync();
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var interopWindow = new WindowInteropHelper(this);
             _hwnd = interopWindow.Handle;
 
-            InitComposition();
-            await StartCaptureAsync();
+            var presentationSource = PresentationSource.FromVisual(this);
+            var dpiX = 1.0;
+            var dpiY = 1.0;
+            if (presentationSource != null)
+            {
+                dpiX = presentationSource.CompositionTarget.TransformToDevice.M11;
+                dpiY = presentationSource.CompositionTarget.TransformToDevice.M22;
+            }
+            var controlsWidth = (float)(ControlsGrid.ActualWidth * dpiX);
+
+            InitComposition(controlsWidth);
+            InitWindowList();
         }
 
-        private void InitComposition()
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            StopCapture();
+        }
+
+        private void WindowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var comboBox = (ComboBox)sender;
+            var process = (Process)comboBox.SelectedItem;
+
+            if (process != null)
+            {
+                var hwnd = process.MainWindowHandle;
+                try
+                {
+                    StartHwndCapture(hwnd);
+                }
+                catch (Exception)
+                {
+                    Debug.WriteLine($"Hwnd 0x{hwnd.ToInt32():X8} is not valid for capture!");
+                    _processes.Remove(process);
+                    comboBox.SelectedIndex = -1;
+                }
+            }
+        }
+
+        private void InitComposition(float controlsWidth)
         {
             // Create our compositor
             _compositor = new Compositor();
@@ -58,62 +91,65 @@ namespace WPFCaptureSample
             _target = _compositor.CreateDesktopWindowTarget(_hwnd, true);
 
             // Attach our root visual
-            _root = _compositor.CreateSpriteVisual();
+            _root = _compositor.CreateContainerVisual();
             _root.RelativeSizeAdjustment = Vector2.One;
-            _root.Brush = _compositor.CreateColorBrush(Colors.White);
+            _root.Size = new Vector2(-controlsWidth, 0);
+            _root.Offset = new Vector3(controlsWidth, 0, 0);
             _target.Root = _root;
 
-            // Setup our content
-            _brush = _compositor.CreateSurfaceBrush();
-            _brush.HorizontalAlignmentRatio = 0.5f;
-            _brush.VerticalAlignmentRatio = 0.5f;
-            _brush.Stretch = CompositionStretch.Uniform;
-
-            var shadow = _compositor.CreateDropShadow();
-            shadow.Mask = _brush;
-
-            _content = _compositor.CreateSpriteVisual();
-            _content.AnchorPoint = new Vector2(0.5f);
-            _content.RelativeOffsetAdjustment = new Vector3(0.5f, 0.5f, 0);
-            _content.RelativeSizeAdjustment = Vector2.One;
-            _content.Size = new Vector2(-80, -80);
-            _content.Brush = _brush;
-            _content.Shadow = shadow;
-            _root.Children.InsertAtTop(_content);
+            // Setup the rest of our sample application
+            _sample = new BasicSampleApplication(_compositor);
+            _root.Children.InsertAtTop(_sample.Visual);
         }
 
-        private async Task StartCaptureAsync()
+        private void InitWindowList()
+        {
+            if (ApiInformation.IsApiContractPresent(typeof(Windows.Foundation.UniversalApiContract).FullName, 8))
+            {
+                var processesWithWindows = from p in Process.GetProcesses()
+                                           where !string.IsNullOrWhiteSpace(p.MainWindowTitle) && WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)
+                                           select p;
+                _processes = new ObservableCollection<Process>(processesWithWindows);
+                WindowComboBox.ItemsSource = _processes;
+            }
+            else
+            {
+                WindowComboBox.IsEnabled = false;
+            }
+        }
+
+        private async Task StartPickerCaptureAsync()
         {
             var picker = new GraphicsCapturePicker();
             picker.SetWindow(_hwnd);
-
             var item = await picker.PickSingleItemAsync();
+
             if (item != null)
             {
-                _capture = new BasicCapture(_device, item);
+                _sample.StartCaptureFromItem(item);
+            }
+        }
 
-                var surface = _capture.CreateSurface(_compositor);
-                _brush.Surface = surface;
-
-                _capture.StartCapture();
+        private void StartHwndCapture(IntPtr hwnd)
+        {
+            var item = CaptureHelper.CreateItemForWindow(hwnd);
+            if (item != null)
+            {
+                _sample.StartCaptureFromItem(item);
             }
         }
 
         private void StopCapture()
         {
-            _capture?.Dispose();
-            _brush.Surface = null;
+            _sample.StopCapture();
         }
 
         private IntPtr _hwnd;
         private Compositor _compositor;
         private CompositionTarget _target;
-        private SpriteVisual _root;
+        private ContainerVisual _root;
 
-        private SpriteVisual _content;
-        private CompositionSurfaceBrush _brush;
-
-        private IDirect3DDevice _device;
-        private BasicCapture _capture;
+        private BasicSampleApplication _sample;
+        private ObservableCollection<Process> _processes;
     }
 }
