@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Windows.System;
 
 namespace WPFCompTest
 {
@@ -13,5 +14,11 @@ namespace WPFCompTest
     /// </summary>
     public partial class App : Application
     {
+        public App()
+        {
+            _controller = CoreMessagingHelper.CreateDispatcherQueueControllerForCurrentThread();
+        }
+
+        private DispatcherQueueController _controller;
     }
 }
