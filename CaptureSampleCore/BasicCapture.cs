@@ -1,9 +1,5 @@
 ﻿using Robmikh.WindowsRuntimeHelpers;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Graphics;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX;
@@ -85,10 +81,10 @@ namespace CaptureSampleCore
                     newSize = true;
                     _lastSize = frame.ContentSize;
                     _swapChain.ResizeBuffers(
-                        2, 
-                        _lastSize.Width, 
-                        _lastSize.Height, 
-                        SharpDX.DXGI.Format.B8G8R8A8_UNorm, 
+                        2,
+                        _lastSize.Width,
+                        _lastSize.Height,
+                        SharpDX.DXGI.Format.B8G8R8A8_UNorm,
                         SharpDX.DXGI.SwapChainFlags.None);
                 }
 

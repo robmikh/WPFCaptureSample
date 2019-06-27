@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Graphics.Capture;
 
 namespace Robmikh.WindowsRuntimeHelpers
@@ -50,7 +46,7 @@ namespace Robmikh.WindowsRuntimeHelpers
             var interop = (IGraphicsCaptureItemInterop)factory;
 
             var temp = typeof(GraphicsCaptureItem);
-            
+
             // For some reason typeof(GraphicsCaptureItem).GUID returns the wrong guid?
             var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
             var item = Marshal.GetObjectForIUnknown(itemPointer) as GraphicsCaptureItem;

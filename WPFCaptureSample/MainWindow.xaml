@@ -43,6 +43,6 @@
         <Grid Grid.Column="1">
             <Rectangle Fill="WhiteSmoke" />
         </Grid>
-        
+
     </Grid>
 </Window>

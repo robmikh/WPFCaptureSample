@@ -1,8 +1,6 @@
 ﻿using Robmikh.WindowsRuntimeHelpers;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
