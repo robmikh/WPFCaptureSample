@@ -49,7 +49,7 @@ namespace Robmikh.WindowsRuntimeHelpers
             uint hr = CreateDispatcherQueueController(options, out IntPtr controllerPointer);
             if (hr == 0)
             {
-                controller = Marshal.GetObjectForIUnknown(controllerPointer) as DispatcherQueueController;
+                controller = DispatcherQueueController.FromAbi(controllerPointer);
                 Marshal.Release(controllerPointer);
             }
 

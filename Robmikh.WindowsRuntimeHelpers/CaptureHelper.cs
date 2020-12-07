@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Capture;
+using WinRT;
 
 namespace Robmikh.WindowsRuntimeHelpers
 {
@@ -25,47 +26,47 @@ namespace Robmikh.WindowsRuntimeHelpers
         [ComVisible(true)]
         interface IGraphicsCaptureItemInterop
         {
-            IntPtr CreateForWindow(
+            void CreateForWindow(
                 [In] IntPtr window,
-                [In] ref Guid iid);
+                [In] ref Guid iid,
+                out IntPtr result);
 
-            IntPtr CreateForMonitor(
+            void CreateForMonitor(
                 [In] IntPtr monitor,
-                [In] ref Guid iid);
+                [In] ref Guid iid,
+                out IntPtr result);
         }
 
         public static void SetWindow(this GraphicsCapturePicker picker, IntPtr hwnd)
         {
-            var interop = (IInitializeWithWindow)(object)picker;
+            var interop = picker.As<IInitializeWithWindow>();
             interop.Initialize(hwnd);
         }
 
         public static GraphicsCaptureItem CreateItemForWindow(IntPtr hwnd)
         {
-            var factory = WindowsRuntimeMarshal.GetActivationFactory(typeof(GraphicsCaptureItem));
-            var interop = (IGraphicsCaptureItemInterop)factory;
+            var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
 
             var temp = typeof(GraphicsCaptureItem);
 
             // For some reason typeof(GraphicsCaptureItem).GUID returns the wrong guid?
-            var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
-            var item = Marshal.GetObjectForIUnknown(itemPointer) as GraphicsCaptureItem;
-            Marshal.Release(itemPointer);
+            interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid, out var raw);
+            var item = GraphicsCaptureItem.FromAbi(raw);
+            Marshal.Release(raw);
 
             return item;
         }
 
         public static GraphicsCaptureItem CreateItemForMonitor(IntPtr hmon)
         {
-            var factory = WindowsRuntimeMarshal.GetActivationFactory(typeof(GraphicsCaptureItem));
-            var interop = (IGraphicsCaptureItemInterop)factory;
+            var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
 
             var temp = typeof(GraphicsCaptureItem);
 
             // For some reason typeof(GraphicsCaptureItem).GUID returns the wrong guid?
-            var itemPointer = interop.CreateForMonitor(hmon, GraphicsCaptureItemGuid);
-            var item = Marshal.GetObjectForIUnknown(itemPointer) as GraphicsCaptureItem;
-            Marshal.Release(itemPointer);
+            interop.CreateForMonitor(hmon, GraphicsCaptureItemGuid, out var raw);
+            var item = GraphicsCaptureItem.FromAbi(raw);
+            Marshal.Release(raw);
 
             return item;
         }
