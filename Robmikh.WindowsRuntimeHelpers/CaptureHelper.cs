@@ -54,15 +54,9 @@ namespace Robmikh.WindowsRuntimeHelpers
             GraphicsCaptureItem item = null;
             unsafe
             {
-                var woop = typeof(GraphicsCaptureItem).GUID;
-                if (woop == GraphicsCaptureItemGuid)
-                {
-                    System.Diagnostics.Debugger.Break();
-                }
                 var guid = GraphicsCaptureItemGuid;
                 var guidPointer = (Guid*)Unsafe.AsPointer(ref guid);
                 var raw = callback(interop, guidPointer);
-                //interop.CreateForWindow(hwnd, (Guid*)guidPointer, out object raw);
                 item = raw.As<GraphicsCaptureItem>();
             }
             return item;
