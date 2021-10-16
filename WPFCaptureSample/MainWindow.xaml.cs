@@ -1,4 +1,6 @@
 ﻿using CaptureSampleCore;
+using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 using Robmikh.WindowsRuntimeHelpers;
 using System;
 using System.Collections.ObjectModel;
@@ -46,7 +48,7 @@ namespace WPFCaptureSample
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var interopWindow = new WindowInteropHelper(this);
-            _hwnd = interopWindow.Handle;
+            _hwnd = (HWND)interopWindow.Handle;
 
             var presentationSource = PresentationSource.FromVisual(this);
             var dpiX = 1.0;
@@ -79,14 +81,14 @@ namespace WPFCaptureSample
             {
                 StopCapture();
                 MonitorComboBox.SelectedIndex = -1;
-                var hwnd = process.MainWindowHandle;
+                var hwnd = (HWND)process.MainWindowHandle;
                 try
                 {
                     StartHwndCapture(hwnd);
                 }
                 catch (Exception)
                 {
-                    Debug.WriteLine($"Hwnd 0x{hwnd.ToInt32():X8} is not valid for capture!");
+                    Debug.WriteLine($"Hwnd 0x{hwnd.Value:X8} is not valid for capture!");
                     _processes.Remove(process);
                     comboBox.SelectedIndex = -1;
                 }
@@ -102,14 +104,14 @@ namespace WPFCaptureSample
             {
                 StopCapture();
                 WindowComboBox.SelectedIndex = -1;
-                var hmon = monitor.Hmon;
+                var hmon = (HMONITOR)monitor.Hmon;
                 try
                 {
                     StartHmonCapture(hmon);
                 }
                 catch (Exception)
                 {
-                    Debug.WriteLine($"Hmon 0x{hmon.ToInt32():X8} is not valid for capture!");
+                    Debug.WriteLine($"Hmon 0x{hmon.Value:X8} is not valid for capture!");
                     _monitors.Remove(monitor);
                     comboBox.SelectedIndex = -1;
                 }
@@ -179,7 +181,7 @@ namespace WPFCaptureSample
             }
         }
 
-        private void StartHwndCapture(IntPtr hwnd)
+        private void StartHwndCapture(HWND hwnd)
         {
             var item = CaptureHelper.CreateItemForWindow(hwnd);
             if (item != null)
@@ -188,7 +190,7 @@ namespace WPFCaptureSample
             }
         }
 
-        private void StartHmonCapture(IntPtr hmon)
+        private void StartHmonCapture(HMONITOR hmon)
         {
             var item = CaptureHelper.CreateItemForMonitor(hmon);
             if (item != null)
@@ -202,7 +204,7 @@ namespace WPFCaptureSample
             var monitor = (from m in MonitorEnumerationHelper.GetMonitors()
                            where m.IsPrimary
                            select m).First();
-            StartHmonCapture(monitor.Hmon);
+            StartHmonCapture((HMONITOR)monitor.Hmon);
         }
 
         private void StopCapture()
@@ -210,7 +212,7 @@ namespace WPFCaptureSample
             _sample.StopCapture();
         }
 
-        private IntPtr _hwnd;
+        private HWND _hwnd;
         private Compositor _compositor;
         private CompositionTarget _target;
         private ContainerVisual _root;
