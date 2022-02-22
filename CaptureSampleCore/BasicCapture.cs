@@ -1,5 +1,6 @@
 ﻿using Windows.Win32.Graphics.Direct3D11;
 using Windows.Win32.Graphics.Dxgi;
+using Windows.Win32.Graphics.Dxgi.Common;
 using Robmikh.WindowsRuntimeHelpers;
 using System;
 using Windows.Graphics;
@@ -17,6 +18,7 @@ namespace CaptureSampleCore
         public BasicCapture(IDirect3DDevice device, GraphicsCaptureItem item)
         {
             _item = item;
+            var itemSize = item.Size;
             _device = device;
             _d3dDevice = Direct3D11Helper.GetD3D11Device(_device);
             _d3dDevice.GetImmediateContext(out _d3dContext);
@@ -35,8 +37,8 @@ namespace CaptureSampleCore
 
             var description = new DXGI_SWAP_CHAIN_DESC1()
             { 
-                Width = (uint)_item.Size.Width,
-                Height = (uint)_item.Size.Height,
+                Width = (uint)itemSize.Width,
+                Height = (uint)itemSize.Height,
                 Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
                 Stereo = false,
                 SampleDesc = new DXGI_SAMPLE_DESC()
@@ -57,13 +59,13 @@ namespace CaptureSampleCore
                 _swapChain = swapChain;
             }
 
-            _framePool = Direct3D11CaptureFramePool.Create(
+            _framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
                 _device,
                 DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 2,
-                item.Size);
+                itemSize);
             _session = _framePool.CreateCaptureSession(item);
-            _lastSize = item.Size;
+            _lastSize = itemSize;
 
             _framePool.FrameArrived += OnFrameArrived;
         }

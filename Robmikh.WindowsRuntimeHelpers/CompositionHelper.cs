@@ -1,6 +1,7 @@
 ﻿using Windows.Win32.Foundation;
 using Windows.Win32.System.WinRT;
 using Windows.Win32.Graphics.Dxgi;
+using Windows.Win32.System.WinRT.Composition;
 using System.Runtime.InteropServices;
 using Windows.UI.Composition;
 using WinRT;

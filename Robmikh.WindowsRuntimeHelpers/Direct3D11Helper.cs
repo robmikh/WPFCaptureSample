@@ -1,4 +1,5 @@
-﻿using Windows.Win32.Graphics.Direct3D11;
+﻿using Windows.Win32.Graphics.Direct3D;
+using Windows.Win32.Graphics.Direct3D11;
 using Windows.Win32.Graphics.Dxgi;
 using Windows.Win32.System.WinRT;
 using System;
@@ -8,6 +9,7 @@ using static Windows.Win32.PInvoke;
 using IInspectable = Windows.Win32.System.WinRT.IInspectable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Win32.System.WinRT.Direct3D11;
 
 namespace Robmikh.WindowsRuntimeHelpers
 {
@@ -70,8 +72,7 @@ namespace Robmikh.WindowsRuntimeHelpers
         public static IDirect3DDevice CreateDirect3DDeviceFromD3D11Device(ID3D11Device d3dDevice)
         {
             var dxgiDevice = d3dDevice.As<IDXGIDevice>();
-            IInspectable inspectable = null;
-            CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice, out inspectable);
+            CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice, out var inspectable);
             return inspectable.As<IDirect3DDevice>();
         }
 
