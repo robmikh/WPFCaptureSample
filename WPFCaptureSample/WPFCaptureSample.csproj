@@ -6,7 +6,6 @@
     <UseWPF>true</UseWPF>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <Platforms>AnyCPU;x64;ARM64</Platforms>
-	<CsWinRTIncludes>WinRTInteropTools</CsWinRTIncludes>
   </PropertyGroup>
 
   <ItemGroup>
