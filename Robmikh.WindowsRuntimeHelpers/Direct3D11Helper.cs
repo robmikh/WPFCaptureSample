@@ -72,16 +72,15 @@ namespace Robmikh.WindowsRuntimeHelpers
         public static IDirect3DDevice CreateDirect3DDeviceFromD3D11Device(ID3D11Device d3dDevice)
         {
             var dxgiDevice = d3dDevice.As<IDXGIDevice>();
-            CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice, out var inspectable);
-            return inspectable.As<IDirect3DDevice>();
+            CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice, out var raw);
+            return MarshalInterface<IDirect3DDevice>.FromAbi(Marshal.GetIUnknownForObject(raw));
         }
 
         public static IDirect3DSurface CreateDirect3DSurfaceFromD3D11Texture2D(ID3D11Texture2D texture)
         {
             var dxgiSurface = texture.As<IDXGISurface>();
-            IInspectable inspectable = null;
-            CreateDirect3D11SurfaceFromDXGISurface(dxgiSurface, out inspectable);
-            return inspectable.As<IDirect3DSurface>();
+            CreateDirect3D11SurfaceFromDXGISurface(dxgiSurface, out var raw);
+            return MarshalInterface<IDirect3DSurface>.FromAbi(Marshal.GetIUnknownForObject(raw));
         }
 
         public static T GetDXGIInterfaceFromObject<T>(object obj)

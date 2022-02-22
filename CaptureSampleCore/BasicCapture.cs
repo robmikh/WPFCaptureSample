@@ -59,7 +59,7 @@ namespace CaptureSampleCore
                 _swapChain = swapChain;
             }
 
-            _framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
+            _framePool = Direct3D11CaptureFramePool.Create(
                 _device,
                 DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 2,

@@ -20,9 +20,9 @@ namespace Robmikh.WindowsRuntimeHelpers
         public static ICompositionSurface CreateCompositionSurfaceForSwapChain(this Compositor compositor, IDXGISwapChain1 swapChain)
         {
             var interop = compositor.As<ICompositorInterop>();
-            var ptr = Marshal.GetComInterfaceForObject<IDXGISwapChain1, IDXGISwapChain1>(swapChain);
-            interop.CreateCompositionSurfaceForSwapChain(ptr, out var surface);
-            return surface;
+            //var ptr = Marshal.GetComInterfaceForObject<IDXGISwapChain1, IDXGISwapChain1>(swapChain);
+            interop.CreateCompositionSurfaceForSwapChain(swapChain, out var raw);
+            return MarshalInterface<ICompositionSurface>.FromAbi(Marshal.GetIUnknownForObject(raw));
         }
     }
 }
