@@ -1,10 +1,15 @@
-﻿using Robmikh.WindowsRuntimeHelpers;
+﻿using Windows.Win32.Graphics.Direct3D11;
+using Windows.Win32.Graphics.Dxgi;
+using Windows.Win32.Graphics.Dxgi.Common;
+using Robmikh.WindowsRuntimeHelpers;
 using System;
 using Windows.Graphics;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
+using WinRT;
+using System.Runtime.CompilerServices;
 
 namespace CaptureSampleCore
 {
@@ -13,37 +18,54 @@ namespace CaptureSampleCore
         public BasicCapture(IDirect3DDevice device, GraphicsCaptureItem item)
         {
             _item = item;
+            var itemSize = item.Size;
             _device = device;
-            _d3dDevice = Direct3D11Helper.CreateSharpDXDevice(_device);
+            _d3dDevice = Direct3D11Helper.GetD3D11Device(_device);
+            _d3dDevice.GetImmediateContext(out _d3dContext);
 
-            var dxgiFactory = new SharpDX.DXGI.Factory2();
-            var description = new SharpDX.DXGI.SwapChainDescription1()
+            var dxgiDevice = _d3dDevice.As<IDXGIDevice>();
+            IDXGIFactory2 factory = null;
+            unsafe
             {
-                Width = _item.Size.Width,
-                Height = _item.Size.Height,
-                Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                var adapterGuid = typeof(IDXGIAdapter).GUID;
+                dxgiDevice.GetParent((Guid*)Unsafe.AsPointer(ref adapterGuid), out var rawAdapter);
+                var adapter = rawAdapter.As<IDXGIAdapter>();
+                var factoryGuid = typeof(IDXGIFactory2).GUID;
+                adapter.GetParent((Guid*)Unsafe.AsPointer(ref factoryGuid), out var rawFactory);
+                factory = rawFactory.As<IDXGIFactory2>();
+            }
+
+            var description = new DXGI_SWAP_CHAIN_DESC1()
+            { 
+                Width = (uint)itemSize.Width,
+                Height = (uint)itemSize.Height,
+                Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
                 Stereo = false,
-                SampleDescription = new SharpDX.DXGI.SampleDescription()
+                SampleDesc = new DXGI_SAMPLE_DESC()
                 {
                     Count = 1,
-                    Quality = 0
+                    Quality = 0,
                 },
-                Usage = SharpDX.DXGI.Usage.RenderTargetOutput,
+                BufferUsage = Direct3D11Helper.DXGI_USAGE_RENDER_TARGET_OUTPUT,
                 BufferCount = 2,
-                Scaling = SharpDX.DXGI.Scaling.Stretch,
-                SwapEffect = SharpDX.DXGI.SwapEffect.FlipSequential,
-                AlphaMode = SharpDX.DXGI.AlphaMode.Premultiplied,
-                Flags = SharpDX.DXGI.SwapChainFlags.None
+                Scaling = DXGI_SCALING.DXGI_SCALING_STRETCH,
+                SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL,
+                AlphaMode = DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_PREMULTIPLIED,
+                Flags = 0
             };
-            _swapChain = new SharpDX.DXGI.SwapChain1(dxgiFactory, _d3dDevice, ref description);
+            unsafe
+            {
+                factory.CreateSwapChainForComposition(_d3dDevice, (DXGI_SWAP_CHAIN_DESC1*)Unsafe.AsPointer(ref description), null, out var swapChain);
+                _swapChain = swapChain;
+            }
 
             _framePool = Direct3D11CaptureFramePool.Create(
                 _device,
                 DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 2,
-                item.Size);
+                itemSize);
             _session = _framePool.CreateCaptureSession(item);
-            _lastSize = item.Size;
+            _lastSize = itemSize;
 
             _framePool.FrameArrived += OnFrameArrived;
         }
@@ -52,8 +74,8 @@ namespace CaptureSampleCore
         {
             _session?.Dispose();
             _framePool?.Dispose();
-            _swapChain?.Dispose();
-            _d3dDevice?.Dispose();
+            _swapChain = null;
+            _d3dDevice = null;
         }
 
         public void StartCapture()
@@ -82,21 +104,25 @@ namespace CaptureSampleCore
                     _lastSize = frame.ContentSize;
                     _swapChain.ResizeBuffers(
                         2,
-                        _lastSize.Width,
-                        _lastSize.Height,
-                        SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                        SharpDX.DXGI.SwapChainFlags.None);
+                        (uint)_lastSize.Width,
+                        (uint)_lastSize.Height,
+                        DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+                        0);
                 }
 
-                using (var backBuffer = _swapChain.GetBackBuffer<SharpDX.Direct3D11.Texture2D>(0))
-                using (var bitmap = Direct3D11Helper.CreateSharpDXTexture2D(frame.Surface))
+                ID3D11Texture2D backBuffer = null;
+                unsafe
                 {
-                    _d3dDevice.ImmediateContext.CopyResource(bitmap, backBuffer);
+                    var guid = typeof(ID3D11Texture2D).GUID;
+                    _swapChain.GetBuffer(0, (Guid*)Unsafe.AsPointer(ref guid), out var rawBuffer);
+                    backBuffer = rawBuffer.As<ID3D11Texture2D>();
                 }
+                var bitmap = Direct3D11Helper.GetD3D11Texture2D(frame.Surface);
+                _d3dContext.CopyResource(backBuffer, bitmap);
 
             } // retire the frame
 
-            _swapChain.Present(0, SharpDX.DXGI.PresentFlags.None);
+            _swapChain.Present(0, 0);
 
             if (newSize)
             {
@@ -114,7 +140,8 @@ namespace CaptureSampleCore
         private SizeInt32 _lastSize;
 
         private IDirect3DDevice _device;
-        private SharpDX.Direct3D11.Device _d3dDevice;
-        private SharpDX.DXGI.SwapChain1 _swapChain;
+        private ID3D11Device _d3dDevice;
+        private ID3D11DeviceContext _d3dContext;
+        private IDXGISwapChain1 _swapChain;
     }
 }
