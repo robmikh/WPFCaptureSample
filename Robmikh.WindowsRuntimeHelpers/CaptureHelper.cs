@@ -1,10 +1,8 @@
 ﻿using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
-using Windows.Win32.System.WinRT;
 using Windows.Win32.System.WinRT.Graphics.Capture;
 using System;
 using Windows.Graphics.Capture;
-using WinRT;
 using WinRT.Interop;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -58,9 +56,9 @@ namespace Robmikh.WindowsRuntimeHelpers
             {
                 var guid = GraphicsCaptureItemGuid;
                 var guidPointer = (Guid*)Unsafe.AsPointer(ref guid);
-                var raw = callback(interop, guidPointer);
-                item = GraphicsCaptureItem.FromAbi(Marshal.GetIUnknownForObject(raw));
-                //item = raw.As<GraphicsCaptureItem>();
+                var raw = Marshal.GetIUnknownForObject(callback(interop, guidPointer));
+                item = GraphicsCaptureItem.FromAbi(raw);
+                Marshal.Release(raw);
             }
             return item;
         }

@@ -1,12 +1,10 @@
 ﻿using Windows.Win32.Graphics.Direct3D;
 using Windows.Win32.Graphics.Direct3D11;
 using Windows.Win32.Graphics.Dxgi;
-using Windows.Win32.System.WinRT;
 using System;
 using Windows.Graphics.DirectX.Direct3D11;
 using WinRT;
 using static Windows.Win32.PInvoke;
-using IInspectable = Windows.Win32.System.WinRT.IInspectable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.System.WinRT.Direct3D11;
@@ -33,8 +31,6 @@ namespace Robmikh.WindowsRuntimeHelpers
 
         // TODO: Why arn't these being generated?
         static uint D3D11_SDK_VERSION = 7;
-        static int DXGI_ERROR_UNSUPPORTED = -2005270524;
-        public static uint DXGI_USAGE_RENDER_TARGET_OUTPUT = (uint)( 1L << (1 + 4) );
 
         private static ID3D11Device CreateD3DDevice(D3D_DRIVER_TYPE driverType, D3D11_CREATE_DEVICE_FLAG flags)
         {
@@ -73,14 +69,20 @@ namespace Robmikh.WindowsRuntimeHelpers
         {
             var dxgiDevice = d3dDevice.As<IDXGIDevice>();
             CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice, out var raw);
-            return MarshalInterface<IDirect3DDevice>.FromAbi(Marshal.GetIUnknownForObject(raw));
+            var rawPtr = Marshal.GetIUnknownForObject(raw);
+            var result = MarshalInterface<IDirect3DDevice>.FromAbi(rawPtr);
+            Marshal.Release(rawPtr);
+            return result;
         }
 
         public static IDirect3DSurface CreateDirect3DSurfaceFromD3D11Texture2D(ID3D11Texture2D texture)
         {
             var dxgiSurface = texture.As<IDXGISurface>();
             CreateDirect3D11SurfaceFromDXGISurface(dxgiSurface, out var raw);
-            return MarshalInterface<IDirect3DSurface>.FromAbi(Marshal.GetIUnknownForObject(raw));
+            var rawPtr = Marshal.GetIUnknownForObject(raw);
+            var result = MarshalInterface<IDirect3DSurface>.FromAbi(rawPtr);
+            Marshal.Release(rawPtr);
+            return result;
         }
 
         public static T GetDXGIInterfaceFromObject<T>(object obj)

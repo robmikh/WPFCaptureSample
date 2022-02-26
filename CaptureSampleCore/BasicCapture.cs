@@ -10,6 +10,7 @@ using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
 using WinRT;
 using System.Runtime.CompilerServices;
+using static Windows.Win32.PInvoke;
 
 namespace CaptureSampleCore
 {
@@ -46,7 +47,7 @@ namespace CaptureSampleCore
                     Count = 1,
                     Quality = 0,
                 },
-                BufferUsage = Direct3D11Helper.DXGI_USAGE_RENDER_TARGET_OUTPUT,
+                BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
                 BufferCount = 2,
                 Scaling = DXGI_SCALING.DXGI_SCALING_STRETCH,
                 SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL,
