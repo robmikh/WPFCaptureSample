@@ -28,10 +28,6 @@ namespace Robmikh.WindowsRuntimeHelpers
             }
         }
 
-
-        // TODO: Why arn't these being generated?
-        static uint D3D11_SDK_VERSION = 7;
-
         private static ID3D11Device CreateD3DDevice(D3D_DRIVER_TYPE driverType, D3D11_CREATE_DEVICE_FLAG flags)
         {
             unsafe
